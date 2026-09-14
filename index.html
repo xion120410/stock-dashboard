@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mobile Investment Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스탁 캐시보드 (Stock Dashboard)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -13,138 +13,145 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-            background-color: #f2f4f7;
-            color: #222;
-            padding: 12px;
-            max-width: 500px; /* 모바일 전용 폭 고정 */
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            word-break: keep-all;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         /* 헤더 */
         header {
             background: #ffffff;
-            padding: 14px;
+            padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         header h1 {
-            font-size: 1.1rem;
-            color: #111;
-            margin-bottom: 6px;
+            font-size: 1.5rem;
+            color: #111827;
         }
 
         .date-picker {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: #666;
+            gap: 10px;
+            font-weight: 600;
         }
 
         .date-picker input {
-            padding: 4px 8px;
-            border: 1px solid #ddd;
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 0.85rem;
         }
 
         /* 카드 공통 */
         .card {
             background: #ffffff;
             border-radius: 12px;
-            padding: 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            margin-bottom: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
         .card h2 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #f0f0f0;
+            font-size: 1.15rem;
+            color: #111827;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f3f4f6;
         }
 
-        /* API 키 세팅 */
+        /* API 키 입력 */
         .api-group {
             display: flex;
-            gap: 6px;
+            gap: 10px;
         }
 
         .api-group input {
             flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 10px;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 0.8rem;
         }
 
-        /* 버튼 기본 */
+        /* 버튼 */
         .btn {
             background: #2563eb;
             color: #fff;
             border: none;
-            padding: 8px 12px;
+            padding: 10px 16px;
             border-radius: 6px;
             font-weight: 600;
-            font-size: 0.8rem;
             cursor: pointer;
-            white-space: nowrap;
         }
-
-        .btn-green { background: #10b981; width: 100%; margin-top: 6px; }
+        .btn-green { background: #10b981; }
         .btn-dark { background: #374151; }
 
-        /* 1. 증시 현황 (2열 바둑판 세로카드) */
+        /* 2단 그리드 (PC는 2열, 모바일은 자동 1열 직렬 배치) */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        /* 증시 현황 그리드 */
         .market-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
         }
 
         .market-item {
             background: #f9fafb;
-            padding: 8px 10px;
+            padding: 12px;
             border-radius: 8px;
-            border: 1px solid #f3f4f6;
+            border: 1px solid #e5e7eb;
         }
 
-        .market-item .title { font-size: 0.75rem; color: #6b7280; display: block; }
-        .market-item .val-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px; }
-        .market-item .value { font-size: 0.85rem; font-weight: bold; }
-        .market-item .change { font-size: 0.7rem; font-weight: 600; }
+        .market-item .title { font-size: 0.85rem; color: #6b7280; display: block; }
+        .market-item .value { font-size: 1.1rem; font-weight: bold; margin-top: 4px; }
+        .market-item .change { font-size: 0.85rem; font-weight: 600; margin-left: 6px; }
 
         .up { color: #dc2626; }
         .down { color: #2563eb; }
 
-        /* 2. AI 뉴스 분석 입력창 */
+        /* 뉴스 입력 */
         textarea {
             width: 100%;
-            height: 60px;
-            padding: 8px;
-            border: 1px solid #ddd;
+            height: 80px;
+            padding: 10px;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
-            resize: none;
-            font-size: 0.8rem;
+            resize: vertical;
+            margin-bottom: 10px;
         }
 
-        /* 3. 모바일 전용 세로 리스트 (표 완전 제거) */
+        /* 리스트 스타일 */
         .data-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .data-item {
             background: #f9fafb;
             border-radius: 8px;
-            padding: 10px;
-            border: 1px solid #edf2f7;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
         }
 
         .data-item-header {
@@ -152,59 +159,40 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 6px;
-            padding-bottom: 4px;
-            border-bottom: 1px dashed #e5e7eb;
         }
 
-        .data-item-title { font-weight: bold; font-size: 0.85rem; color: #111; }
-        
-        .row-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            margin-top: 3px;
-        }
-
-        .row-info .label { color: #6b7280; }
-        .row-info .val { font-weight: 600; }
+        .data-item-title { font-weight: bold; font-size: 0.95rem; }
 
         /* 뱃지 */
         .badge {
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: bold;
         }
         .badge-good { background: #fee2e2; color: #dc2626; }
         .badge-bad { background: #dbeafe; color: #2563eb; }
 
-        /* 4. 새로 추가: 수기 매매 내역 입력 폼 */
+        /* 수기 매매 폼 */
         .trade-form {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
             background: #f3f4f6;
-            padding: 8px;
+            padding: 12px;
             border-radius: 8px;
         }
 
-        .trade-form-row {
-            display: flex;
-            gap: 6px;
-        }
-
         .trade-form input, .trade-form select {
-            flex: 1;
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 0.8rem;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
         }
 
-        /* 5. 스크린샷 */
+        /* 스크린샷 앰버 */
         .screenshot-box {
-            height: 120px;
+            height: 140px;
             background: #f9fafb;
             border: 2px dashed #d1d5db;
             border-radius: 8px;
@@ -212,22 +200,22 @@
             align-items: center;
             justify-content: center;
             color: #9ca3af;
-            font-size: 0.8rem;
             cursor: pointer;
         }
 
-        /* 6. 차트 */
         .chart-box {
-            height: 180px;
+            height: 250px;
             position: relative;
         }
     </style>
 </head>
 <body>
 
+<div class="container">
+
     <!-- 헤더 -->
     <header>
-        <h1>📱 모바일 자산 관리 대시보드</h1>
+        <h1>📈 스탁 캐시보드 (Stock Dashboard)</h1>
         <div class="date-picker">
             <span>기준일자</span>
             <input type="date" id="base-date" value="2026-09-14">
@@ -238,276 +226,230 @@
     <div class="card">
         <h2>🔑 Gemini API 키 설정</h2>
         <div class="api-group">
-            <input type="password" id="api-key" placeholder="API 키 입력">
+            <input type="password" id="api-key" placeholder="API 키를 입력하세요">
             <button class="btn btn-dark" onclick="saveApiKey()">저장</button>
         </div>
     </div>
 
-    <!-- 1. 증시 및 환율 현황 -->
+    <!-- 증시 및 환율 현황 -->
     <div class="card">
-        <h2>📈 증시 및 환율 현황</h2>
+        <h2>🌐 증시 및 환율 현황</h2>
         <div class="market-grid">
             <div class="market-item">
                 <span class="title">코스피</span>
-                <div class="val-row">
-                    <span class="value">3,200.15</span>
-                    <span class="change down">-1.2%</span>
-                </div>
+                <div><span class="value">3,200.15</span><span class="change down">-1.2%</span></div>
             </div>
             <div class="market-item">
                 <span class="title">코스닥</span>
-                <div class="val-row">
-                    <span class="value">850.30</span>
-                    <span class="change down">-0.8%</span>
-                </div>
+                <div><span class="value">850.30</span><span class="change down">-0.8%</span></div>
             </div>
             <div class="market-item">
                 <span class="title">S&P 500</span>
-                <div class="val-row">
-                    <span class="value">5,600.20</span>
-                    <span class="change up">+0.4%</span>
-                </div>
+                <div><span class="value">5,600.20</span><span class="change up">+0.4%</span></div>
             </div>
             <div class="market-item">
                 <span class="title">NASDAQ</span>
-                <div class="val-row">
-                    <span class="value">17,200.10</span>
-                    <span class="change up">+0.9%</span>
-                </div>
+                <div><span class="value">17,200.10</span><span class="change up">+0.9%</span></div>
             </div>
             <div class="market-item">
                 <span class="title">USD/KRW</span>
-                <div class="val-row">
-                    <span class="value">1,342.50</span>
-                    <span class="change up">+0.3%</span>
-                </div>
+                <div><span class="value">1,342.50</span><span class="change up">+0.3%</span></div>
             </div>
             <div class="market-item">
                 <span class="title">미 10년물 국채</span>
-                <div class="val-row">
-                    <span class="value">3.85%</span>
-                    <span class="change down">-0.02</span>
+                <div><span class="value">3.85%</span><span class="change down">-0.02</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2단 영역: AI 분석 & 주요 이슈 -->
+    <div class="grid-2">
+        <!-- AI 뉴스 분석 -->
+        <div class="card">
+            <h2>🤖 AI 뉴스 & 이슈 분석</h2>
+            <textarea id="news-input" placeholder="분석할 주요 뉴스나 이슈를 입력하세요..."></textarea>
+            <button class="btn btn-green" style="width: 100%;" onclick="addIssue()">요약 리스트에 등록</button>
+        </div>
+
+        <!-- 주요 이슈 Summary (퍼센티지 반영) -->
+        <div class="card">
+            <h2>📋 주요 이슈 Summary</h2>
+            <div class="data-list" id="issue-list">
+                <div class="data-item">
+                    <div class="data-item-header">
+                        <span class="data-item-title">매크로</span>
+                        <span class="badge badge-bad">악재 80%</span>
+                    </div>
+                    <div>미 연준 기준금리 인상 가능성 및 긴축 심화</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-item-header">
+                        <span class="data-item-title">반도체</span>
+                        <span class="badge badge-good">호재 90%</span>
+                    </div>
+                    <div>AI 반도체 수요 폭발로 인한 신규 계약 체결</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. AI 뉴스 분석 -->
-    <div class="card">
-        <h2>🤖 AI 뉴스 & 이슈 분석</h2>
-        <textarea id="news-input" placeholder="분석할 주요 이슈나 뉴스를 입력하세요..."></textarea>
-        <button class="btn btn-green" onclick="addIssue()">요약 리스트에 등록</button>
-    </div>
-
-    <!-- 3. 주요 이슈 Summary -->
-    <div class="card">
-        <h2>📋 주요 이슈 Summary</h2>
-        <div class="data-list" id="issue-list">
-            <div class="data-item">
-                <div class="data-item-header">
-                    <span class="data-item-title">매크로</span>
-                    <span class="badge badge-bad">악재</span>
-                </div>
-                <div class="row-info">
-                    <span class="label">내용</span>
-                    <span class="val">미 연준 기준금리 인상 가능성 및 긴축 심화</span>
-                </div>
-            </div>
-            <div class="data-item">
-                <div class="data-item-header">
-                    <span class="data-item-title">반도체</span>
-                    <span class="badge badge-good">호재</span>
-                </div>
-                <div class="row-info">
-                    <span class="label">내용</span>
-                    <span class="val">AI 반도체 수요 폭발로 인한 신규 계약</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. ✨[신규] 나의 수기 매매 내역 -->
-    <div class="card">
-        <h2>✏️ 나의 매매 내역 (수기 작성)</h2>
-        <div class="trade-form">
-            <div class="trade-form-row">
-                <input type="text" id="trade-name" placeholder="종목명 (예: 삼성전자)">
+    <!-- 2단 영역: 수기 매매 내역 & 스크린샷 -->
+    <div class="grid-2">
+        <!-- 수기 매매 내역 작성 -->
+        <div class="card">
+            <h2>✏️ 나의 매매 내역 (수기 작성)</h2>
+            <div class="trade-form">
+                <input type="text" id="trade-name" placeholder="종목명">
                 <select id="trade-type">
                     <option value="매수">매수</option>
                     <option value="매도">매도</option>
                 </select>
-            </div>
-            <div class="trade-form-row">
                 <input type="number" id="trade-price" placeholder="단가(원)">
                 <input type="number" id="trade-qty" placeholder="수량">
             </div>
-            <button class="btn btn-dark" onclick="addTradeRecord()">내역 추가하기</button>
-        </div>
+            <button class="btn btn-dark" style="width: 100%; margin-bottom: 12px;" onclick="addTradeRecord()">내역 추가하기</button>
 
-        <div class="data-list" id="trade-list">
-            <div class="data-item">
-                <div class="data-item-header">
-                    <span class="data-item-title">KODEX 200</span>
-                    <span class="badge badge-good">매수</span>
-                </div>
-                <div class="row-info">
-                    <span class="label">매수가/수량</span>
-                    <span class="val">35,200원 / 50주</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5. 내 계좌 및 ETF 잔고 -->
-    <div class="card">
-        <h2>💰 계좌 평가 및 ETF 잔고</h2>
-        <div class="data-list" style="margin-bottom: 8px;">
-            <div class="row-info" style="background:#f9fafb; padding:8px; border-radius:6px;">
-                <span class="label">국내 계좌 평가액</span>
-                <span class="val">427,056,340원</span>
-            </div>
-            <div class="row-info" style="background:#f9fafb; padding:8px; border-radius:6px;">
-                <span class="label">해외 계좌 평가액</span>
-                <span class="val">$150,200</span>
-            </div>
-        </div>
-
-        <div class="data-list">
-            <div class="data-item">
-                <div class="data-item-header">
-                    <span class="data-item-title">KODEX 200</span>
-                    <span class="badge badge-bad">-11.81%</span>
-                </div>
-                <div class="row-info"><span class="label">보유수량</span><span class="val">2,492주</span></div>
-                <div class="row-info"><span class="label">평가손익</span><span class="val down">-36,572,331원</span></div>
-            </div>
-            <div class="data-item">
-                <div class="data-item-header">
-                    <span class="data-item-title">SPDR S&P 500</span>
-                    <span class="badge badge-good">+0.44%</span>
-                </div>
-                <div class="row-info"><span class="label">보유수량</span><span class="val">103주</span></div>
-                <div class="row-info"><span class="label">평가손익</span><span class="val up">+$462.57</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. 차트 -->
-    <div class="card">
-        <h2>📊 자산 평가액 추이</h2>
-        <div class="chart-box">
-            <canvas id="mobileChart"></canvas>
-        </div>
-    </div>
-
-    <!-- 7. 스크린샷 첨부 -->
-    <div class="card">
-        <h2>📸 스크린샷 첨부</h2>
-        <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="previewImg(this)">
-        <div class="screenshot-box" id="img-box" onclick="document.getElementById('img-input').click()">
-            📷 터치하여 스크린샷 이미지 첨부
-        </div>
-    </div>
-
-    <script>
-        // API 키 저장/불러오기
-        function saveApiKey() {
-            const key = document.getElementById('api-key').value;
-            if(key) {
-                localStorage.setItem('gemini_api_key', key);
-                alert('API 키가 저장되었습니다.');
-            }
-        }
-
-        window.onload = function() {
-            const savedKey = localStorage.getItem('gemini_api_key');
-            if(savedKey) document.getElementById('api-key').value = savedKey;
-
-            // 차트 그리드
-            const ctx = document.getElementById('mobileChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
-                    datasets: [{
-                        label: '자산 (만원)',
-                        data: [60000, 62000, 59000, 61000, 63000, 62900],
-                        borderColor: '#2563eb',
-                        borderWidth: 2,
-                        tension: 0.2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-
-        // 이슈 추가
-        function addIssue() {
-            const text = document.getElementById('news-input').value.trim();
-            if(!text) return alert('내용을 입력하세요.');
-
-            const list = document.getElementById('issue-list');
-            const item = `
+            <div class="data-list" id="trade-list">
                 <div class="data-item">
                     <div class="data-item-header">
-                        <span class="data-item-title">수기 이슈</span>
-                        <span class="badge badge-good">등록됨</span>
+                        <span class="data-item-title">KODEX 200</span>
+                        <span class="badge badge-good">매수</span>
                     </div>
-                    <div class="row-info">
-                        <span class="label">내용</span>
-                        <span class="val">${text}</span>
-                    </div>
+                    <div>35,200원 / 50주</div>
                 </div>
-            `;
-            list.insertAdjacentHTML('afterbegin', item);
-            document.getElementById('news-input').value = '';
-        }
+            </div>
+        </div>
 
-        // 수기 매매 내역 추가
-        function addTradeRecord() {
-            const name = document.getElementById('trade-name').value.trim();
-            const type = document.getElementById('trade-type').value;
-            const price = document.getElementById('trade-price').value;
-            const qty = document.getElementById('trade-qty').value;
+        <!-- 스크린샷 첨부 -->
+        <div class="card">
+            <h2>📸 스크린샷 첨부</h2>
+            <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="previewImg(this)">
+            <div class="screenshot-box" id="img-box" onclick="document.getElementById('img-input').click()">
+                📷 터치/클릭하여 스크린샷 이미지 첨부
+            </div>
+        </div>
+    </div>
 
-            if(!name || !price || !qty) return alert('모든 항목을 입력하세요.');
-
-            const tradeList = document.getElementById('trade-list');
-            const badgeClass = type === '매수' ? 'badge-good' : 'badge-bad';
-            
-            const item = `
+    <!-- 계좌 평가 & 자산 추이 차트 -->
+    <div class="grid-2">
+        <div class="card">
+            <h2>💰 계좌 평가 및 ETF 잔고</h2>
+            <div style="margin-bottom: 12px;">
+                <div><strong>국내 계좌 평가액:</strong> 427,056,340원</div>
+                <div><strong>해외 계좌 평가액:</strong> $150,200</div>
+            </div>
+            <div class="data-list">
                 <div class="data-item">
                     <div class="data-item-header">
-                        <span class="data-item-title">${name}</span>
-                        <span class="badge ${badgeClass}">${type}</span>
+                        <span class="data-item-title">KODEX 200</span>
+                        <span class="badge badge-bad">-11.81%</span>
                     </div>
-                    <div class="row-info">
-                        <span class="label">단가/수량</span>
-                        <span class="val">${Number(price).toLocaleString()}원 / ${qty}주</span>
-                    </div>
+                    <div>2,492주 | 평가손익: -36,572,331원</div>
                 </div>
-            `;
-            tradeList.insertAdjacentHTML('afterbegin', item);
+            </div>
+        </div>
 
-            // 입력창 초기화
-            document.getElementById('trade-name').value = '';
-            document.getElementById('trade-price').value = '';
-            document.getElementById('trade-qty').value = '';
+        <div class="card">
+            <h2>📊 자산 평가액 추이</h2>
+            <div class="chart-box">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function saveApiKey() {
+        const key = document.getElementById('api-key').value;
+        if(key) {
+            localStorage.setItem('gemini_api_key', key);
+            alert('API 키가 저장되었습니다.');
         }
+    }
 
-        // 이미지 미리보기
-        function previewImg(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('img-box').innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:110px; border-radius:6px;">`;
-                }
-                reader.readAsDataURL(input.files[0]);
+    window.onload = function() {
+        const savedKey = localStorage.getItem('gemini_api_key');
+        if(savedKey) document.getElementById('api-key').value = savedKey;
+
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
+                datasets: [{
+                    label: '자산 (만원)',
+                    data: [60000, 62000, 59000, 61000, 63000, 62900],
+                    borderColor: '#2563eb',
+                    borderWidth: 2,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
             }
+        });
+    }
+
+    // 주요 이슈 추가
+    function addIssue() {
+        const text = document.getElementById('news-input').value.trim();
+        if(!text) return alert('내용을 입력하세요.');
+
+        const list = document.getElementById('issue-list');
+        const item = `
+            <div class="data-item">
+                <div class="data-item-header">
+                    <span class="data-item-title">AI 분석</span>
+                    <span class="badge badge-good">호재 85%</span>
+                </div>
+                <div>${text}</div>
+            </div>
+        `;
+        list.insertAdjacentHTML('afterbegin', item);
+        document.getElementById('news-input').value = '';
+    }
+
+    // 수기 매매 내역 추가
+    function addTradeRecord() {
+        const name = document.getElementById('trade-name').value.trim();
+        const type = document.getElementById('trade-type').value;
+        const price = document.getElementById('trade-price').value;
+        const qty = document.getElementById('trade-qty').value;
+
+        if(!name || !price || !qty) return alert('모든 항목을 입력하세요.');
+
+        const tradeList = document.getElementById('trade-list');
+        const badgeClass = type === '매수' ? 'badge-good' : 'badge-bad';
+        
+        const item = `
+            <div class="data-item">
+                <div class="data-item-header">
+                    <span class="data-item-title">${name}</span>
+                    <span class="badge ${badgeClass}">${type}</span>
+                </div>
+                <div>${Number(price).toLocaleString()}원 / ${qty}주</div>
+            </div>
+        `;
+        tradeList.insertAdjacentHTML('afterbegin', item);
+
+        document.getElementById('trade-name').value = '';
+        document.getElementById('trade-price').value = '';
+        document.getElementById('trade-qty').value = '';
+    }
+
+    // 스크린샷 미리보기
+    function previewImg(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('img-box').innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:130px; border-radius:6px;">`;
+            }
+            reader.readAsDataURL(input.files[0]);
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
