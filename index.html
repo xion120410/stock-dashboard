@@ -392,5 +392,16 @@
       });
     }
   </script>
+<!-- 🔑 화면 하단 Google API Key 설정 영역 -->
+  <footer style="background-color: var(--card-bg); border-top: 1px solid var(--border-color); padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+    <div style="color: var(--text-muted);">
+      ⚙️ Google Gemini API Key 설정 (브라우저 로컬 저장)
+    </div>
+    <div style="display: flex; gap: 0.4rem; align-items: center;">
+      <input type="password" id="geminiApiKey" placeholder="API Key 입력" style="padding: 0.4rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.8rem; width: 220px; background: var(--bg-color); color: var(--text-color);">
+      <button class="btn btn-secondary" onclick="saveApiKey()">키 저장</button>
+    </div>
+  </footer>
+</body>
 </body>
 </html>
